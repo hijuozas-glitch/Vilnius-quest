@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#080A0F">
+<title>Vilnius Quest 🗺️</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #080A0F;
+  --parchment: #F2EBD9;
+  --amber: #D4900A;
+  --amber-glow: #F5B93A;
+  --rust: #8B3A2A;
+  --forest: #2A5C3F;
+  --forest-light: #3D8A5E;
+  --steel: #3A4A5C;
+  --mist: #8A9AAC;
+  --surface: #0F1218;
+  --card: #161C26;
+  --border: #252D3A;
+  --text: #E8DECA;
+  --dim: #6A7A8A;
+  --red: #C0392B;
+  --gold-shine: linear-gradient(135deg, #C8860A, #F5B93A, #C8860A);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── UTILITY ─── */
+.screen { display:none; min-height:100vh; flex-direction:column; }
+.screen.active { display:flex; }
+
+h1,h2,h3 { font-family:'Cinzel', serif; }
+
+.gold-line {
+  height:1px;
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════
+   SETUP SCREEN
+════════════════════════════════════════════ */
+#setup {
+  background: radial-gradient(ellipse at 50% -20%, #1C1200 0%, var(--ink) 65%);
+  align-items:center; justify-content:center;
+  padding: 40px 24px 60px;
+  text-align:center;
+  gap: 0;
+}
+
+.crest {
+  font-size: 72px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 30px rgba(212,144,10,0.4));
+  animation: crестFloat 3s ease-in-out infinite;
+}
+@keyframes crестFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.setup-eyebrow {
+  font-family:'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 6px;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.setup-title {
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.0;
+  margin-bottom: 6px;
+  background: var(--gold-shine);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.setup-subtitle {
+  font-size: 18px;
+  color: var(--mist);
+  font-style: italic;
+  margin-bottom: 32px;
+}
+
+.setup-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 16px;
+  text-align:left;
+}
+.setup-card-title {
+  font-family:'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--amber);
+  text-transform:uppercase;
+  margin-bottom: 16px;
+}
+
+.team-row {
+  display:flex; gap:10px; align-items:center; margin-bottom:10px;
+}
+.team-color-dot {
+  width:12px; height:12px; border-radius:50%; flex-shrink:0;
+}
+.team-input {
+  flex:1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:10px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-family:'Crimson Pro', serif;
+  color: var(--text);
+  outline:none;
+  transition: border-color 0.2s;
+}
+.team-input:focus { border-color: var(--amber); }
+.team-input::placeholder { color: var(--dim); }
+
+.setup-info {
+  display:flex; gap:8px; align-items:flex-start;
+  padding: 12px 14px;
+  background: rgba(212,144,10,0.07);
+  border-left: 2px solid var(--amber);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--mist);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.begin-btn {
+  width:100%; max-width:380px;
+  padding: 18px;
+  background: var(--amber);
+  color: var(--ink);
+  border:none;
+  border-radius:14px;
+  font-family:'Cinzel', serif;
+  font-size: 16px;
+  font-weight:700;
+  letter-spacing:1px;
+  cursor:pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.begin-btn:active { transform:scale(0.97); }
+
+/* ════════════════════════════════════════════
+   LEADERBOARD BAR (fixed top in game)
+════════════════════════════════════════════ */
+.lb-bar {
+  position:sticky; top:0; z-index:200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.lb-bar::-webkit-scrollbar { display:none; }
+
+.lb-team {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:7px;
+  padding: 7px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius:10px;
+  transition: border-color 0.3s;
+}
+.lb-team.active-team { border-color: var(--amber); }
+.lb-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.lb-name { font-family:'Cinzel',serif; font-size:11px; letter-spacing:1px; }
+.lb-pts { font-size:13px; font-weight:600; color: var(--amber-glow); margin-left:2px; }
+
+/* ════════════════════════════════════════════
+   QUEST SCREEN
+════════════════════════════════════════════ */
+#quest { background: var(--ink); }
+
+.stop-progress {
+  background: var(--surface);
+  padding: 8px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.stop-progress-dots { display:flex; gap:5px; flex:1; }
+.s-dot {
+  flex:1; height:4px; border-radius:2px;
+  background: var(--border);
+  transition: background 0.4s;
+}
+.s-dot.done { background: var(--forest-light); }
+.s-dot.current { background: var(--amber); }
+.stop-progress-label { font-size:11px; color:var(--dim); white-space:nowrap; }
+
+/* Stop panels */
+.stop-panel { display:none; }
+.stop-panel.active { display:block; animation: revealPanel 0.4s ease; }
+@keyframes revealPanel {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Hero */
+.stop-hero {
+  position:relative;
+  min-height: 180px;
+  display:flex; align-items:flex-end;
+  overflow:hidden;
+  background: linear-gradient(135deg, #0D1018, #1A1008);
+}
+.hero-emoji-bg {
+  position:absolute;
+  font-size:140px;
+  right:-10px; top:-20px;
+  opacity:0.08;
+  user-select:none;
+  filter:blur(1px);
+}
+.hero-glow {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 20% 80%, rgba(212,144,10,0.1) 0%, transparent 60%);
+}
+.hero-bottom { position:relative; padding:20px 20px 16px; flex:1; }
+.hero-stopnum {
+  font-family:'Cinzel',serif; font-size:10px;
+  letter-spacing:4px; color:var(--amber); margin-bottom:6px;
+}
+.hero-name {
+  font-size:28px; font-weight:700; line-height:1.1;
+}
+.hero-sub { font-size:13px; color:var(--mist); margin-top:4px; font-style:italic; }
+
+/* Section label */
+.section-label {
+  font-family:'Cinzel',serif; font-size:10px;
+  letter-spacing:3px; color:var(--amber);
+  text-transform:uppercase;
+  padding: 14px 20px 8px;
+}
+
+/* ─── RIDDLE CARD ─── */
+.riddle-card {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow:hidden;
+  position:relative;
+}
+.riddle-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--amber), var(--rust), transparent);
+}
+.riddle-header {
+  padding: 16px 18px 12px;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.riddle-icon { font-size:22px; flex-shrink:0; margin-top:2px; }
+.riddle-title { font-family:'Cinzel',serif; font-size:13px; letter-spacing:1px; margin-bottom:6px; color:var(--amber); }
+.riddle-text {
+  font-size:15px; line-height:1.7;
+  font-style:italic; color:var(--parchment);
+}
+
+.answer-section { padding: 0 18px 16px; }
+.answer-input {
+  width:100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:10px;
+  padding: 12px 16px;
+  font-size:15px; font-family:'Crimson Pro',serif;
+  color: var(--text);
+  outline:none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+}
+.answer-input:focus { border-color: var(--amber); }
+
+.submit-answer-btn {
+  width:100%;
+  padding: 13px;
+  background: var(--amber);
+  color: var(--ink);
+  border:none; border-radius:10px;
+  font-family:'Cinzel',serif; font-size:13px; font-weight:700;
+  letter-spacing:1px; cursor:pointer;
+  transition: all 0.2s;
+}
+.submit-answer-btn:active { transform:scale(0.97); }
+.submit-answer-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+.answer-feedback {
+  display:none;
+  margin-top:10px;
+  padding: 12px 14px;
+  border-radius:10px;
+  font-size:14px; line-height:1.5;
+}
+.answer-feedback.correct { display:block; background:rgba(42,92,63,0.2); border:1px solid var(--forest-light); color:#7BC99A; }
+.answer-feedback.wrong { display:block; background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.4); color:#E07060; }
+
+/* Hints */
+.hints-section { padding: 0 16px 12px; }
+.hint-btn {
+  width:100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius:10px;
+  color: var(--mist);
+  font-family:'Crimson Pro',serif;
+  font-size:14px; cursor:pointer;
+  transition: all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-bottom:6px;
+}
+.hint-btn:active { border-color:var(--amber); color:var(--amber); }
+.hint-btn.used { background:rgba(212,144,10,0.05); border-color:rgba(212,144,10,0.2); }
+.hint-cost { font-size:11px; color:var(--rust); background:rgba(139,58,42,0.15); padding:2px 7px; border-radius:6px; }
+
+.hint-reveal {
+  padding: 10px 14px;
+  background: rgba(212,144,10,0.06);
+  border-left:2px solid rgba(212,144,10,0.4);
+  border-radius:4px;
+  font-size:14px; line-height:1.6; color:var(--mist);
+  font-style:italic;
+  margin-bottom:6px;
+  display:none;
+}
+.hint-reveal.shown { display:block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* ─── PHOTO CHALLENGE ─── */
+.photo-challenge-card {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow:hidden;
+  position:relative;
+}
+.photo-challenge-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--forest), var(--forest-light), transparent);
+}
+.photo-header { padding:16px 18px 10px; display:flex; gap:10px; align-items:flex-start; }
+.photo-icon { font-size:22px; flex-shrink:0; }
+.photo-title { font-family:'Cinzel',serif; font-size:13px; letter-spacing:1px; color:var(--forest-light); margin-bottom:5px; }
+.photo-desc { font-size:14px; line-height:1.65; color:#BDD5C5; }
+
+.photo-requirements {
+  margin: 0 18px 14px;
+  padding:12px 14px;
+  background:rgba(42,92,63,0.1);
+  border-radius:10px;
+  border:1px solid rgba(42,92,63,0.3);
+}
+.req-label { font-size:11px; letter-spacing:2px; color:var(--forest-light); font-family:'Cinzel',serif; margin-bottom:8px; }
+.req-list { list-style:none; }
+.req-list li { font-size:13px; color:#9EC4AD; padding:2px 0; }
+.req-list li::before { content:'✦ '; color:var(--forest-light); }
+
+.photo-upload-area {
+  margin: 0 18px 16px;
+  border: 2px dashed var(--border);
+  border-radius:12px;
+  padding: 24px;
+  text-align:center;
+  cursor:pointer;
+  transition: all 0.2s;
+  position:relative;
+}
+.photo-upload-area:hover, .photo-upload-area.dragover {
+  border-color: var(--forest-light);
+  background:rgba(42,92,63,0.05);
+}
+.upload-icon { font-size:32px; margin-bottom:8px; display:block; }
+.upload-text { font-size:14px; color:var(--mist); }
+.upload-sub { font-size:12px; color:var(--dim); margin-top:4px; }
+.upload-file-input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+.photo-preview {
+  margin: 0 18px 10px;
+  border-radius:10px;
+  overflow:hidden;
+  display:none;
+  position:relative;
+}
+.photo-preview img { width:100%; height:180px; object-fit:cover; display:block; }
+.photo-preview-change {
+  position:absolute; top:8px; right:8px;
+  background:rgba(0,0,0,0.7);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;
+  padding:5px 10px;
+  font-size:12px; color:white; cursor:pointer;
+}
+
+.evaluate-btn {
+  margin: 0 18px 16px;
+  width: calc(100% - 36px);
+  padding: 14px;
+  background: var(--forest);
+  color: white;
+  border:none; border-radius:10px;
+  font-family:'Cinzel',serif; font-size:13px; font-weight:600;
+  letter-spacing:1px; cursor:pointer;
+  transition: all 0.2s;
+  display:none;
+}
+.evaluate-btn:active { transform:scale(0.97); }
+
+.ai-evaluating {
+  margin: 0 18px 14px;
+  padding:16px;
+  background:rgba(212,144,10,0.06);
+  border:1px solid rgba(212,144,10,0.2);
+  border-radius:10px;
+  text-align:center;
+  display:none;
+}
+.ai-evaluating-dots {
+  font-size:20px;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.ai-evaluating-text { font-size:13px; color:var(--mist); margin-top:6px; font-style:italic; }
+
+.photo-result {
+  margin: 0 18px 16px;
+  padding:14px;
+  border-radius:10px;
+  font-size:14px; line-height:1.6;
+  display:none;
+}
+.photo-result.pass { display:block; background:rgba(42,92,63,0.2); border:1px solid var(--forest-light); color:#7BC99A; }
+.photo-result.fail { display:block; background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.4); color:#E07060; }
+
+/* ─── UNLOCK BANNER ─── */
+.unlock-banner {
+  margin: 0 16px 12px;
+  background: linear-gradient(135deg, #1A1200, #0F1800);
+  border: 1px solid rgba(212,144,10,0.4);
+  border-radius:16px;
+  padding: 20px;
+  text-align:center;
+  display:none;
+  position:relative;
+  overflow:hidden;
+}
+.unlock-banner::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,144,10,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.unlock-banner.visible { display:block; animation: unlockReveal 0.6s ease; }
+@keyframes unlockReveal {
+  0% { opacity:0; transform:scale(0.95); }
+  60% { transform:scale(1.02); }
+  100% { opacity:1; transform:scale(1); }
+}
+.unlock-icon { font-size:36px; margin-bottom:10px; display:block; }
+.unlock-title { font-family:'Cinzel',serif; font-size:14px; letter-spacing:2px; color:var(--amber-glow); margin-bottom:8px; }
+.unlock-next { font-size:15px; line-height:1.6; color:var(--text); margin-bottom:14px; }
+.next-stop-btn {
+  padding: 14px 24px;
+  background: var(--amber);
+  color: var(--ink);
+  border:none; border-radius:10px;
+  font-family:'Cinzel',serif; font-size:13px; font-weight:700;
+  letter-spacing:1px; cursor:pointer;
+  transition:all 0.2s;
+}
+.next-stop-btn:active { transform:scale(0.97); }
+
+/* ─── TEAM SELECTOR ─── */
+.team-selector {
+  margin: 0 16px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+}
+.team-sel-label { font-family:'Cinzel',serif; font-size:10px; letter-spacing:3px; color:var(--amber); margin-bottom:12px; }
+.team-sel-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.team-sel-btn {
+  flex:1; min-width:80px;
+  padding:10px 8px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  font-family:'Cinzel',serif; font-size:11px; letter-spacing:1px;
+  cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.team-sel-btn.selected { border-width:2px; }
+.team-sel-btn:active { transform:scale(0.96); }
+
+/* ─── BOTTOM NAV ─── */
+.quest-bottom {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display:flex; gap:10px; z-index:100;
+}
+.qb-btn {
+  padding:13px 16px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  font-family:'Cinzel',serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
+}
+.qb-btn:active { transform:scale(0.97); }
+.qb-prev { background:transparent; color:var(--text); }
+.qb-scores { flex:1; background:var(--card); color:var(--amber); }
+
+/* ════════════════════════════════════════════
+   FINAL SCREEN
+════════════════════════════════════════════ */
+#finale {
+  background:radial-gradient(ellipse at 50% 30%, #0D1A08 0%, var(--ink) 70%);
+  align-items:center; justify-content:center;
+  text-align:center; padding:40px 24px;
+}
+.finale-icon { font-size:80px; display:block; margin-bottom:16px; animation:pop 0.6s ease; }
+@keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
+.finale-title { font-size:38px; color:var(--amber-glow); margin-bottom:8px; }
+.finale-sub { font-size:16px; color:var(--mist); font-style:italic; margin-bottom:32px; }
+
+.podium { width:100%; max-width:380px; margin-bottom:28px; }
+.podium-item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:8px;
+  transition: all 0.3s;
+}
+.podium-item:first-child {
+  background:linear-gradient(135deg,#1A1200,#0D1000);
+  border-color:rgba(212,144,10,0.4);
+}
+.podium-rank { font-family:'Cinzel',serif; font-size:20px; color:var(--amber); width:32px; }
+.podium-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+.podium-name { flex:1; font-family:'Cinzel',serif; font-size:14px; letter-spacing:1px; text-align:left; }
+.podium-score { font-size:20px; font-weight:600; color:var(--amber-glow); }
+
+.replay-btn {
+  padding:15px 32px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  font-family:'Cinzel',serif; font-size:14px;
+  cursor:pointer; font-weight:600;
+}
+
+/* ─── SCORES MODAL ─── */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.75);
+  z-index:300;
+  display:none; align-items:flex-end;
+}
+.modal-overlay.open { display:flex; animation:fadeIn 0.2s ease; }
+.scores-modal {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  padding:24px;
+  width:100%;
+  animation:slideUp 0.3s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-title { font-family:'Cinzel',serif; font-size:16px; letter-spacing:2px; color:var(--amber); margin-bottom:20px; text-align:center; }
+.modal-team-row {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+}
+.modal-team-row:last-child { border-bottom:none; }
+.modal-rank { font-family:'Cinzel',serif; font-size:18px; color:var(--amber); width:28px; }
+.modal-dot { width:12px; height:12px; border-radius:50%; }
+.modal-name { flex:1; font-family:'Cinzel',serif; font-size:14px; letter-spacing:1px; }
+.modal-pts { font-size:20px; font-weight:600; color:var(--amber-glow); }
+.modal-close {
+  width:100%; margin-top:20px;
+  padding:14px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  font-family:'Cinzel',serif; font-size:13px;
+  cursor:pointer;
+}
+/* ─── AUDIO PLAYER (shown after riddle solved) ─── */
+.audio-unlock-card {
+  margin: 0 16px 12px;
+  background: linear-gradient(135deg, #0D1A08, #111800);
+  border: 1px solid rgba(61,138,94,0.4);
+  border-radius: 16px;
+  overflow: hidden;
+  display: none;
+  position: relative;
+}
+.audio-unlock-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--forest), var(--forest-light), transparent);
+}
+.audio-unlock-card.revealed {
+  display: block;
+  animation: revealPanel 0.5s ease;
+}
+.audio-unlock-header {
+  padding: 14px 18px 10px;
+  display: flex; gap: 10px; align-items: center;
+}
+.audio-unlock-icon { font-size: 22px; }
+.audio-unlock-label {
+  font-family: 'Cinzel', serif; font-size: 10px;
+  letter-spacing: 3px; color: var(--forest-light);
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.audio-unlock-title { font-size: 15px; font-weight: 600; }
+.audio-unlock-dur { font-size: 12px; color: var(--mist); }
+
+.audio-player-row {
+  padding: 0 18px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.ap-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--forest);
+  border: none; cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s, background 0.15s;
+  color: white;
+}
+.ap-btn:active { transform: scale(0.92); }
+.ap-btn.playing { background: var(--forest-light); }
+.ap-track { flex: 1; }
+.ap-bar {
+  width: 100%; height: 4px;
+  background: var(--border);
+  border-radius: 2px; overflow: hidden;
+  cursor: pointer; margin-bottom: 6px;
+}
+.ap-fill {
+  height: 100%;
+  background: var(--forest-light);
+  width: 0%; border-radius: 2px;
+  transition: width 0.8s linear;
+}
+.ap-times { display: flex; justify-content: space-between; font-size: 11px; color: var(--mist); }
+.audio-script-box {
+  margin: 0 18px 16px;
+  padding: 12px 14px;
+  background: rgba(42,92,63,0.08);
+  border-left: 2px solid rgba(61,138,94,0.3);
+  border-radius: 4px;
+  font-size: 13px; line-height: 1.7;
+  color: var(--mist); font-style: italic;
+}
+.audio-src-hint {
+  margin: 0 18px 14px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 11px; color: var(--dim);
+}
+
+/* ─── TEAM LINK ITEMS ─── */
+.team-link-item {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tl-name { font-family: 'Cinzel', serif; font-size: 13px; flex: 1; }
+.tl-copy {
+  padding: 6px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px; color: var(--amber);
+  cursor: pointer; font-family: 'Crimson Pro', serif;
+}
+.photo-upload-label {
+  display: block;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.photo-upload-label:active {
+  border-color: var(--forest-light);
+  background: rgba(42,92,63,0.05);
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ SETUP (shown only if no ?team= param) ════════════════════ -->
+<div class="screen active" id="setup">
+  <div class="crest">🏰</div>
+  <div class="setup-eyebrow">Team Building · Vilnius</div>
+  <h1 class="setup-title">VILNIUS<br>QUEST</h1>
+  <p class="setup-subtitle">Miesto paslaptys laukia jūsų</p>
+
+  <!-- HOST mode: configure teams and generate links -->
+  <div id="hostSetup">
+    <div class="setup-card">
+      <div class="setup-card-title">⚔️ Komandų pavadinimai</div>
+      <div class="team-row"><div class="team-color-dot" style="background:#D4900A"></div><input class="team-input" id="t0" placeholder="Komanda 1" value="Gintaro Vilkai"></div>
+      <div class="team-row"><div class="team-color-dot" style="background:#2A5C3F"></div><input class="team-input" id="t1" placeholder="Komanda 2" value="Pilies Riteriai"></div>
+      <div class="team-row"><div class="team-color-dot" style="background:#3A4A5C"></div><input class="team-input" id="t2" placeholder="Komanda 3 (nebūtina)" value=""></div>
+    </div>
+
+    <div class="setup-card" id="linksCard" style="display:none">
+      <div class="setup-card-title">🔗 Nuorodos komandoms</div>
+      <div id="teamLinks"></div>
+      <div class="setup-info" style="margin-top:12px">Išsiųskite kiekvienai komandai jų nuorodą per Teams. Kiekviena komanda žaidžia savo telefone.</div>
+    </div>
+
+    <div class="setup-card">
+      <div class="setup-card-title">📜 Žaidimo taisyklės</div>
+      <div class="setup-info">
+        Kiekvienoje stotelėje reikia išspręsti <strong>mįslę</strong> — atsakymas atrakina audio pasakojimą ir kelią į kitą vietą. Galite prašyti <strong>užuominų</strong> (kainuoja taškus). Yra ir <strong>foto iššūkis</strong> — AI įvertins kompoziciją. Laimi komanda su daugiausia taškų!
+      </div>
+    </div>
+
+    <button class="begin-btn" style="background:var(--steel);color:var(--text);border:1px solid var(--border);margin-bottom:10px" onclick="generateLinks()">🔗 Sugeneruoti nuorodas komandoms</button>
+    <button class="begin-btn" onclick="beginQuest()">⚔️ Pradėti be nuorodų (vienas telefonas)</button>
+  </div>
+
+  <!-- TEAM mode: shown when ?team= is in URL -->
+  <div id="teamWelcome" style="display:none">
+    <div class="setup-card">
+      <div style="text-align:center;padding:10px 0">
+        <div style="font-size:48px;margin-bottom:12px" id="teamWelcomeEmoji">⚔️</div>
+        <div style="font-family:'Cinzel',serif;font-size:20px;letter-spacing:2px;color:var(--amber-glow)" id="teamWelcomeName"></div>
+        <div style="font-size:14px;color:var(--mist);margin-top:8px">Jūsų komanda paruošta kvestui!</div>
+      </div>
+    </div>
+    <div class="setup-card">
+      <div class="setup-card-title">📜 Žaidimo taisyklės</div>
+      <div class="setup-info">Išsprendę mįslę — gausite audio pasakojimą ir navigaciją į kitą vietą. Užuominos kainuoja taškus. Foto iššūkiai — papildomi taškai. Sėkmės! 🗡️</div>
+    </div>
+    <button class="begin-btn" onclick="beginQuestAsTeam()">⚔️ Pradėti Questą</button>
+  </div>
+</div>
+
+<!-- ════════════════════ QUEST ════════════════════ -->
+<div class="screen" id="quest">
+  <div class="lb-bar" id="lbBar"></div>
+  <div class="stop-progress">
+    <div class="stop-progress-dots" id="progressDots"></div>
+    <div class="stop-progress-label" id="progressLbl"></div>
+  </div>
+  <div style="padding-bottom:80px" id="stopsContainer"></div>
+  <div class="quest-bottom">
+    <button class="qb-btn qb-scores" onclick="openScores()">🏆 Rezultatai</button>
+  </div>
+</div>
+
+<!-- ════════════════════ FINALE ════════════════════ -->
+<div class="screen" id="finale">
+  <span class="finale-icon">🏆</span>
+  <h2 class="finale-title">Quest Baigtas!</h2>
+  <p class="finale-sub">Vilniaus paslaptys atskleistos</p>
+  <div class="podium" id="podium"></div>
+  <button class="replay-btn" onclick="location.reload()">↺ Žaisti iš naujo</button>
+</div>
+
+<!-- SCORES MODAL -->
+<div class="modal-overlay" id="scoresModal" onclick="closeScores(event)">
+  <div class="scores-modal">
+    <div class="modal-title">⚔️ REZULTATAI</div>
+    <div id="modalTeamList"></div>
+    <button class="modal-close" onclick="closeScores()">Uždaryti</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// QUEST DATA — NAUJAS MARŠRUTAS
+// ══════════════════════════════════════════════════════════
+const STOPS = [
+  {
+    id: 0,
+    name: "Vingrių skvero šaltiniai",
+    emoji: "💧",
+    subtitle: "Pradžia · Vingrių skveras",
+    audio: {
+      title: "Vilniaus slaptas vanduo",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_01_vingriu.mp3",
+      script: "Sveiki, drąsuoliai. Jūs stovite vienoje keisčiausių Vilniaus vietų — pačiame miesto centre trykšta natūralūs šaltiniai. Kai XIX amžiuje čia buvo kasti grioviai, darbininkai staiga atsidūrė vandenyje. Inžinieriai pasidūsavo, o miestas gavo parką. Vingrių skverai buvo mėgstama vieta aristokratų pasivaikščiojimams — čia jie ateidavo kvėpuoti gryno oro ir demonstruoti savo naujausius skrybėlaičius. Šiandien čia ateina bėgioti. Laikai keičiasi, bet vanduo teka toliau."
+    },
+    riddle: {
+      text: "Aš trykštu žemės gelmėse net miesto centre, ir niekas manęs nesustabdo. Seniau mane gerdavo, šiandien aplinkui mane bėgioja. Esu Vilniuje, bet manęs nesitikit jūroje. Kas aš esu?",
+      answer: ["saltinis", "saltiniai", "vingriu saltiniai", "vingriu skverai", "vingriu", "vingriu skveras"],
+      points: 120,
+      unlockMsg: "Teisingai! Vingrių šaltiniai — vanduo, kuris čia teka šimtus metų. Dabar eikite Vingrių gatve link <strong>MO muziejaus skvero</strong> — tai modernios architektūros sala tarp senų namų. Apie 400 metrų tiesia linija.",
+      hints: [
+        { text: "Ieškote vietos kur gamta prasiveržia per miesto asfaltą.", cost: 30 },
+        { text: "Esate tiesiai ant atsakymo. Pažvelkite po kojomis — girdate tekantį vandenį?", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "VANDUO IR LAIKAS",
+      hint: "Naudokite fontana, upes atspindi arba judesio efekta. Bent vienas komandos narys turi buti kadre.",
+      hintCost: 40,
+      hint: "Naudokite fontana, bala, atspindi ar judejima. Pabandykite ilgo ekspozicijos efekta arba atspindi vandenyje.",
+      hintCost: 40,
+      points: 120,
+      aiPrompt: "You are a creative photo judge for a team building quest in Vilnius. The photo theme is: WATER AND TIME - capturing the flow of time like water. Requirements: at least one team member visible, water or reflection present, creative composition. Evaluate the photo. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two enthusiastic sentences in Lithuanian praising creativity and noting what was captured well\"}. Be generous — reward creativity and effort."
+    }
+  },
+  {
+    id: 1,
+    name: "MO muziejaus skveras",
+    emoji: "🎨",
+    subtitle: "Modernus miestas · Pylimo g. 17",
+    audio: {
+      title: "Kai menas susitinka su betonu",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_02_mo.mp3",
+      script: "Prieš jus stovi MO muziejus — pastatas, kuris Vilniuje sukėlė tokių diskusijų, kad net kaimynai nustojo kalbėtis. Architektas Danielis Libeskindas, žinomas dėl Žydų muziejaus Berlyne, sukūrė struktūrą, kuri tyčia neatitinka aplinkos. Statybos metu visi piktinosi. Dabar visi fotografuojasi. Tai vadinama progresyvumu. Skvere prie muziejaus renkasi menininkai, studentai ir žmonės, kurie turi laiko sėdėti lauke darbo dienomis. Muziejuje saugoma viena didžiausių modernaus Lietuvos meno kolekcijų — daugiau nei 5000 kūrinių. Dauguma jų parūpinta Viktoro ir Danos Butkų, kurie tiesiog... mėgo pirkti meną. Labai daug meno."
+    },
+    riddle: {
+      text: "Aš esu pastatas, kuris nesistengia patikti savo kaimynams, bet visi vis tiek ateina pasigrožėti. Mano autorius projektavo ir liūdną muziejų Berlyne. Viduje — tūkstančiai meno kūrinių. Kas aš esu?",
+      answer: ["mo", "mo muziejus", "moderniojo meno", "moderniojo meno centras", "muziejus"],
+      points: 130,
+      unlockMsg: "Puiku! MO — kur menas provokuoja, o lankytojai nusifotografuoja. Toliau eikite <strong>Pylimo gatve</strong> į pietus — tai viena senųjų miesto ribų gatvių. Ieškokite gynybinės sienos fragmentų.",
+      hints: [
+        { text: "Ieškote modernios architektūros pastato, kuris išsiskiria iš aplinkos.", cost: 30 },
+        { text: "Du raidžių pavadinimas. Stovi Pylimo gatvėje.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "FORMA IR ERDVE",
+      hint: "MO muziejaus pastatas pilnas geometriniu formu ir neiprastu kampu. Sasaveikaukite su pastato architektura — stovekite, semkites, remkites i ji.",
+      hintCost: 40,
+      hint: "MO pastatas pilnas geometriniu formu. Sasaveikaukite su jo kampais — stovekite, remkites, zaidkite su perspektyva.",
+      hintCost: 40,
+      points: 130,
+      aiPrompt: "You are a creative photo judge. The theme is: FORM AND SPACE - team interacting creatively with the geometric MO Museum building in Vilnius (a modern angular building). Requirements: at least one person visible, MO building or its architectural details present, creative interaction with the architecture. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two sentences in Lithuanian praising the creativity and composition\"}. Be generous."
+    }
+  },
+  {
+    id: 2,
+    name: "Pylimo gatvė",
+    emoji: "🧱",
+    subtitle: "Miesto riba · Pylimo gatvė",
+    audio: {
+      title: "Siena, kurios nebėra",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_03_pylimo.mp3",
+      script: "Pylimo gatvė. Vardas sako viską — čia kadaise buvo pylimas. Viduramžių Vilnius turėjo gynybinę sieną su devyniais vartais, ir šis kelias ėjo lygiai jos pakraščiu. Įsivaizduokite: 1503 metai, jūs esate pirklys iš Gdansko, atvežęs audinio. Prieš jus stovi aukšta mūro siena, sargybiniai žiūri nuo bokštų, ir jūs mokate muitą. Visi moka muitą, niekas nemėgsta mokesčių — tai universali tiesa per visus amžius. Dabar ta siena daugiausia nugriuvusi, išliko tik fragmentai. Bet gatvė liko, ir jos pavadinimas mena tuos laikus, kai Vilnius buvo apsuptas mūru."
+    },
+    riddle: {
+      text: "Einu lygiagrečiai su sena miesto riba. Mano vardas byloja apie gynybą, bet šiandien čia važiuoja troleibusai. Kur aš einu?",
+      answer: ["pylimo", "pylimo gatve", "pylimo g"],
+      points: 110,
+      unlockMsg: "Teisingai! Pylimo gatvė — buvusios miesto gynybos linija. Dabar eikite <strong>Vokiečių gatve</strong> — ji įsipina tarp senų medinių namų ir paslaptingų kiemų. Apie 300 metrų.",
+      hints: [
+        { text: "Gatvės pavadinimas tiesiogiai nurodo jos praeitį kaip gynybinę struktūrą.", cost: 30 },
+        { text: "Gatvė eina palei buvusią miesto sieną. Jos vardas — tai, kuo ji buvo.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "RIBA",
+      hint: "Viena komandos puse mieste, kita — uz jo. Arba komanda stovi ant linijos tarp dvieju pasauliu — sviesa ir sesieje, asfaltė ir zalumoje.",
+      hintCost: 40,
+      hint: "Viena komandos puse sviesioje, kita — seselyje. Arba pusiau uz kampo, pusiau matomu. Galima ir su kreida ant asfalto.",
+      hintCost: 40,
+      points: 110,
+      aiPrompt: "Photo theme: BOUNDARY - the street was once the city border. The photo should convey the idea of a boundary or threshold - half inside, half outside, or standing on a line between two worlds. Requirements: at least one person, clear boundary or contrast idea. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two sentences in Lithuanian\"}. Be generous with creative interpretations."
+    }
+  },
+  {
+    id: 3,
+    name: "Vokiečių gatvė",
+    emoji: "🏚️",
+    subtitle: "Mediniai namai · Vokiečių gatvė",
+    audio: {
+      title: "Gatvė, kurios vardas klaidina",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_04_vokieciu.mp3",
+      script: "Vokiečių gatvė. Neskubėkite daryti išvadų. Gatvė pavadinta ne todėl, kad čia gyveno vokiečiai — o todėl, kad viduramžiais visi užsieniečiai buvo vadinami vokiečiais. Keista logika, bet taip jau buvo. Čia apsistodavo pirkliai iš Vakarų Europos, ir vilniečiai jiems davė bendrą pavadinimą. Gatvėje išlikę vieni iš nedaugelio medinių namų Vilniaus senamiestyje. Medis mieste — tai retenybė, nes dauguma jų sudegė per daugelį gaisrų. Šie namai — tarsi laiko kapsulė, pasakojanti apie gyvenimą prieš kelis šimtmečius. Ir jie vis dar stovi. Kaip tas senelis, kuris visus aplenkia."
+    },
+    riddle: {
+      text: "Viduramžiais čia apsistodavo pirkliai iš toli — iš Hamburgo, Briugės, Kelno. Vietiniai jiems davė bendrą vardą, nes negabėjo skirti vienos tautos nuo kitos. Tas vardas tapo gatvės vardu. Esu sena, trumpa, mediniais namais išpuošta. Kas aš esu?",
+      answer: ["vokieciu", "vokieciu gatve", "vokieciu g"],
+      points: 130,
+      unlockMsg: "Labai gerai! Vokiečių gatvė — kur visi svetimšaliai tapo vokiečiais. Toliau eikite link <strong>Stiklių gatvės</strong> — vienos seniausių ir trumpiausių gatvių Vilniuje. Ieškokite šalia Pilies gatvės.",
+      hints: [
+        { text: "Gatvės pavadinimas kildinamas iš to, kaip vilniečiai vadino visus vakariečius.", cost: 30 },
+        { text: "Vidurmaižiais lietuviai vokiečiais vadino visus vakarų europiečius. Gatvės vardas tai atspindi.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "LAIKAS SUSTOJĘS",
+      hint: "Fotografuokite salia seno medinio namo. Kuo maziau moderniu elemetu kadre, tuo geriau. Pabandykite atrodyti tarsi kitu amziumi.",
+      hintCost: 40,
+      hint: "Fotografuokite salia seno medinio namo. Kuo maziau moderniu elemetu, tuo geriau. Paslepkite telefonus.",
+      hintCost: 40,
+      points: 130,
+      aiPrompt: "Photo theme: TIME FROZEN - old wooden houses in Vokieciu gatve. The photo should feel like time has stopped, as if you are in another century. Requirements: at least one person, old building or historical street environment in background, nostalgic or historical atmosphere. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two sentences in Lithuanian appreciating the historical atmosphere captured\"}. Be generous."
+    }
+  },
+  {
+    id: 4,
+    name: "Stiklių gatvė",
+    emoji: "🪟",
+    subtitle: "Seniausia gatvė · Stiklių gatvė",
+    audio: {
+      title: "Gatvė, kurią galima praeiti per 30 sekundžių",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_05_stikliu.mp3",
+      script: "Stiklių gatvė — viena trumpiausių ir seniausių gatvių Vilniuje. Stikldirbiai čia dirbo jau XVI amžiuje, ir gatvė gavo jų vardą. Įsivaizduokite cechą: karščio alsavimas, pučiama stiklo masė, kylantys burbuliukai — ir visa tai viduramžių name be oro kondicionavimo. Stiklas tada buvo prabangos daiktas. Langai su stiklais turėjo tik turtingiausi. Visi kiti tenkindavosi oda ar medine dangle. Kai žiūrite pro langą šiandien — prisiminkite, kad tai buvo lauxus prieiga prie prabangos. Šiandien gatvė žinoma kaip viena romantiškausiųjų Vilniuje. Restoranai, mediniai balkoniukai, brukas. Ir tikėtina, kad jūsų batai jau skauda nuo to bruko."
+    },
+    riddle: {
+      text: "Esu trumpa, bet sena. Mano amatininkai pūtė ir formavo karštą masę, kuri vėliau tapo skaidri. XVI amžiuje mano gaminiai buvo prabanga. Kokia gatvė?",
+      answer: ["stikliu", "stikliu gatve", "stikliu g", "stiklius"],
+      points: 140,
+      unlockMsg: "Teisingai! Stiklių gatvė — kur prabanga buvo skaidri. Eikite link <strong>Vilniaus gynybinės sienos</strong> fragmentų — išlikęs mūro gabalas primena, kad šis miestas turėjo savo apsaugą. Ieškokite Bokšto gatvėje.",
+      hints: [
+        { text: "Gatvės pavadinimas susijęs su amatininku, dirbančiu su skaidria, trapi medžiaga.", cost: 30 },
+        { text: "XVI amžiuje šioje gatvėje buvo cechas, gaminantis langams ir indams naudojamą medžiagą.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "SKAIDRUMAS",
+      hint: "Fotografuokite per stikla, vitrina, langa arba vandens atspindi. Komandos nariai matomi per kuria nors skaidria medziaga.",
+      hintCost: 40,
+      hint: "Fotografuokite per kazkokia vitrina arba langa. Arba atspindi vandenyje ar stikline pavirsiu.",
+      hintCost: 40,
+      points: 140,
+      aiPrompt: "Photo theme: TRANSPARENCY - Stikliu (Glass) street. The photo should feature team members visible through glass, a window, a reflection in water or shop window, or any transparent medium. Requirements: at least one person, some form of transparency, reflection or glass. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two sentences in Lithuanian praising the creative use of transparency or reflection\"}. Be generous — any reflective surface counts."
+    }
+  },
+  {
+    id: 5,
+    name: "Vilniaus gynybinė siena",
+    emoji: "🏰",
+    subtitle: "Viduramžių gynybos fragmentas · Bokšto g.",
+    audio: {
+      title: "Siena, kuri išgyveno viską",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_06_siena.mp3",
+      script: "Prieš jus — Vilniaus gynybinės sienos fragmentas. Ši siena buvo statoma nuo 1503 metų ir turėjo apsaugoti miestą nuo visų, kas norėjo čia įeiti nesiprašydami. Ir tokių buvo nemažai — Kryžiuočiai, Rusija, Švedija, vėliau Napoleonas ir po to visi iš eilės. Siena buvo apie du kilometrus ilgio, turėjo keturiolika bokštų ir devynerius vartus. Ilgainiui miestui plečiantis, siena tapo kliūtimi, ir ją pradėjo griauti. Iš viso to liko vos fragmentai — kaip šis. Kai žiūrite į šiuos akmenis, žinokite, kad jie matė viską, ką Vilnius patyrė per penkis šimtus metų. Ir vis tiek stovi. Ne kiekvienas gali tuo pasigirti."
+    },
+    riddle: {
+      text: "Buvau statomas nuo 1503-ųjų. Turėjau devynis vartus ir keturiolika bokštų. Apjuosiau miestą kaip kaklo grandinė. Dabar likę tik gabaliukai. Kas aš buvau?",
+      answer: ["siena", "gynybine siena", "vilniaus siena", "miesto siena", "gynybos siena"],
+      points: 150,
+      unlockMsg: "Teisingai! Gynybinė siena — miestas, kuris bandė apsisaugoti. Eikite link <strong>Misionierių sodų</strong> — paslaptingo ir mažai žinomo parko Vilniuje, kur vienuoliai augino vaistažoles ir tikriausiai galvojo apie gyvenimo prasmę.",
+      hints: [
+        { text: "Ieškote statinio, kuris kadaise supo visą miestą.", cost: 30 },
+        { text: "Kiekvienas viduramžių miestas turėjo tokią apsaugą. Vilniaus versija prasidėjo XVI amžiaus pradžioje.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "STIPRYBĖ IR LAIKAS",
+      hint: "Remkites i siena, stovekite priešais ja kaip gynėjai, arba parodykite komandos vienybe salia akmenu.",
+      hintCost: 40,
+      points: 150,
+      aiPrompt: "Photo theme: STRENGTH AND TIME - next to the medieval defensive wall fragment in Vilnius. The team should demonstrate strength, unity or determination. Requirements: at least one person, wall or stone fragment visible, sense of strength or solidarity. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two enthusiastic sentences in Lithuanian about the strength and solidarity captured\"}. Be generous."
+    }
+  },
+  {
+    id: 6,
+    name: "Misionierių sodai",
+    emoji: "🌿",
+    subtitle: "Paslaptingas parkas · Misionierių g.",
+    audio: {
+      title: "Sodas, kuriame niekas neskuba",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_07_misionieru.mp3",
+      script: "Misionierių sodai — vienas tų Vilniaus kampelių, kuriuos žino tik vietiniai. XVIII amžiuje čia gyveno misionierių vienuoliai, kurie veisė sodus, augino vaistažoles ir atsidavė tyliai maldai bei sodininkyste. Vienuoliai buvo labai produktyvūs žmonės — jie statė bažnyčias, rašė knygas, gydė ligonius ir augino kopūstus. Visa tai vienu metu. Šiandien sodai yra ramybės oazė miesto šurmulyje. Čia ateina žmonės, kurie nori pabėgti nuo miesto, nesijausdami kaip išvažiuoja iš miesto. Žaluma, tylūs takeliai, mediniai suoleliai. Ir jokio WiFi signalo. Kas žino — gal vienuoliai planavo būtent taip."
+    },
+    riddle: {
+      text: "Buvau vienuolių poilsio vieta, dabar esu miesto poilsio vieta. Mano praeitis — malda ir vaistažolės, dabartis — jogos kilimėliai ir takerunner. Kas aš esu?",
+      answer: ["misionieru sodai", "misionieru", "sodai", "misionieru sodas"],
+      points: 140,
+      unlockMsg: "Teisingai! Misionierių sodai — vieta, kurioje laikas eina lėčiau. Paskutinė stotelė — <strong>Paupys</strong>! Naujasis kvartalas prie Vilnelės upės, kur senas pramoninis rajonas tapo madinga vieta. Eikite Misionierių gatve link upės.",
+      hints: [
+        { text: "Ieškote parko, susijusio su religiniais ordinais ir jų veikla Vilniuje.", cost: 30 },
+        { text: "Katalikų vienuoliai, vadinami misionieriais, turėjo sodą netoli senamiesčio.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "RAMYBĖ",
+      hint: "Atsiseskite ant suolelio, atsigulkite ant zoles arba uzsimerkkite. Parko aplinka — zaluma, medziai ar takeliai — fone.",
+      hintCost: 40,
+      points: 140,
+      aiPrompt: "Photo theme: PEACE AND TRANQUILITY - in Misionieriaus Gardens in Vilnius. The team should look peaceful, relaxed - sitting, lying on grass, meditating or simply calm. Requirements: at least one person, park environment (greenery, trees, paths), mood of relaxation or peace. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"two soothing sentences in Lithuanian about the peacefulness captured\"}. Be generous."
+    }
+  },
+  {
+    id: 7,
+    name: "Paupys",
+    emoji: "🌊",
+    subtitle: "Naujasis kvartalas · Prie Vilnelės",
+    audio: {
+      title: "Kai fabrikas tampa kavine",
+      duration: "~3 min",
+      src: "https://hijuozas-glitch.github.io/Vilnius-quest/stop_08_paupys.mp3",
+      script: "Sveikiname pasiekus Paupį — paskutinę jūsų kelionės stotelę ir vieną labiausiai transformavusių Vilniaus vietų per pastaruosius dešimt metų. XX amžiuje čia buvo industriniai sandėliai ir gamyklos. Darbininkai atnešdavo pietus pietų pertraukai, o ne avokadų tostas. Dabar tas pats plytinis pastatas yra interjero dizaino boutique. Paupys tapo simboliu to, kaip Vilnius keičiasi. Seni pramoniniai pastatai, Vilnelės pakrantė, mediniai lieptai, lauko kavinės ir žmonės su nešiojamaisiais kompiuteriais, kurie tvirtina, kad dirba iš bet kur. Upė čia buvo visada — ji matė gamyklas, o dabar mato hipsterius. Upė nesprendžia. Jūs atėjote per Vingrių šaltinius ir atėjote prie Vilnelės. Vanduo pradėjo ir vanduo baigė. Simboliška. Arba tiesiog sutapimas. Nusprendžia patys."
+    },
+    riddle: {
+      text: "Buvau pramoninė, dabar esu madinga. Mano senos plytos dabar laiko kavines ir galerijas. Vilnelė eina pro šalį ir stebi mano transformaciją. Kas aš esu?",
+      answer: ["paupys", "paupis", "naujasis kvartalas", "paupiu kvartalas"],
+      points: 160,
+      unlockMsg: "🏆 QUEST BAIGTAS! Paupys — miestas, kuris nesibijo keistis. Jūs atlikote visas 8 stotelės! Dabar spaudžiame rezultatų mygtuką ir sužinome, kuri komanda laimi!",
+      hints: [
+        { text: "Ieškote naujo kvartalo, kuriame senas industrinis rajonas buvo atnaujintas.", cost: 30 },
+        { text: "Šis kvartalas yra prie Vilnelės upės, netoli senamiesčio.", cost: 50 }
+      ]
+    },
+    photo: {
+      theme: "TRANSFORMACIJA",
+      hint: "VISI komandos nariai kadre! Stovekite prie upes arba senose plytinese sienose. Parodykite kelio pabaiga — kuo daugiau energijos!",
+      hintCost: 40,
+      points: 200,
+      aiPrompt: "FINAL photo challenge! Theme: TRANSFORMATION - in Paupys district by Vilnele river. This is the FINAL celebratory photo. ALL team members should be present, showing maximum joy and energy. Requirements: ALL team members visible, Paupys/riverside environment, maximum energy and celebration. Respond ONLY with JSON in Lithuanian: {\"pass\": true/false, \"score\": 0-100, \"feedback\": \"three very enthusiastic celebratory sentences in Lithuanian, mention it is the final photo and congratulate the team\"}. Be very generous — this is the finale!"
+    }
+  }
+];
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+const TEAM_COLORS = ["#D4900A", "#2A5C3F", "#3A4A5C"];
+const TEAM_EMOJIS = ["🦁", "🐺", "🦅"];
+let teams = [];
+let currentStop = 0;
+let currentTeamIdx = 0;
+let isSingleTeamMode = false; // true = URL ?team= mode
+let hintUsed = [[], [], [], [], [], [], [], []];
+let photoHintUsed = new Array(STOPS.length).fill(false);
+let riddleSolved = new Array(STOPS.length).fill(false);
+let photoUploaded = [];
+let audioState = STOPS.map(() => ({ playing: false, currentSec: 0, totalSec: 240 }));
+let audioIntervals = new Array(STOPS.length).fill(null);
+
+// ══════════════════════════════════════════════════════════
+// URL-BASED TEAM DETECTION
+// ══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const teamParam = params.get('team');
+  const colorParam = params.get('color') || '0';
+
+  if (teamParam) {
+    // Single team mode — this device IS one team
+    isSingleTeamMode = true;
+    const colorIdx = parseInt(colorParam) % TEAM_COLORS.length;
+    teams = [{ name: decodeURIComponent(teamParam), color: TEAM_COLORS[colorIdx], points: 0 }];
+    currentTeamIdx = 0;
+    photoUploaded = STOPS.map(() => [false]);
+
+    // Show team welcome
+    document.getElementById('hostSetup').style.display = 'none';
+    document.getElementById('teamWelcome').style.display = 'block';
+    document.getElementById('teamWelcomeEmoji').textContent = TEAM_EMOJIS[colorIdx];
+    document.getElementById('teamWelcomeName').textContent = teams[0].name;
+  }
+});
+
+function generateLinks() {
+  const names = [
+    document.getElementById('t0').value.trim() || "Komanda 1",
+    document.getElementById('t1').value.trim() || "Komanda 2",
+    document.getElementById('t2').value.trim()
+  ].filter(n => n !== "");
+
+  const base = window.location.href.split('?')[0];
+  const linksCard = document.getElementById('linksCard');
+  const linksDiv = document.getElementById('teamLinks');
+
+  linksDiv.innerHTML = names.map((name, i) => {
+    const url = `${base}?team=${encodeURIComponent(name)}&color=${i}`;
+    return `
+      <div class="team-link-item">
+        <div class="tl-dot" style="background:${TEAM_COLORS[i]}"></div>
+        <div class="tl-name">${name}</div>
+        <button class="tl-copy" onclick="copyLink('${url}', this)">📋 Kopijuoti</button>
+      </div>`;
+  }).join('');
+
+  linksCard.style.display = 'block';
+  linksCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyLink(url, btn) {
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✓ Nukopijuota';
+    setTimeout(() => btn.textContent = '📋 Kopijuoti', 2000);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════════
+function beginQuest() {
+  const names = [
+    document.getElementById('t0').value.trim() || "Komanda 1",
+    document.getElementById('t1').value.trim() || "Komanda 2",
+    document.getElementById('t2').value.trim()
+  ].filter(n => n !== "");
+
+  teams = names.map((name, i) => ({ name, color: TEAM_COLORS[i], points: 0 }));
+  photoUploaded = STOPS.map(() => new Array(teams.length).fill(false));
+  isSingleTeamMode = false;
+
+  buildQuest();
+  showScreen('quest');
+  updateLeaderboard();
+  updateProgress();
+}
+
+function beginQuestAsTeam() {
+  // Already have teams[0] set from URL param
+  buildQuest();
+  showScreen('quest');
+  updateLeaderboard();
+  updateProgress();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════════════════
+// BUILD QUEST UI
+// ══════════════════════════════════════════════════════════
+function buildQuest() {
+  const container = document.getElementById('stopsContainer');
+  container.innerHTML = '';
+  STOPS.forEach((stop, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'stop-panel' + (i === 0 ? ' active' : '');
+    panel.id = `sp-${i}`;
+    panel.innerHTML = buildStopHTML(stop, i);
+    container.appendChild(panel);
+  });
+
+  // progress dots
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = STOPS.map((_, i) =>
+    `<div class="s-dot ${i === 0 ? 'current' : ''}" id="dot-${i}" title="Stotelė ${i+1}"></div>`
+  ).join('');
+}
+
+function buildStopHTML(stop, i) {
+  const teamSelHTML = (!isSingleTeamMode && teams.length > 1) ? `
+    <div class="team-selector">
+      <div class="team-sel-label">🎯 Kurios komandos vardu atsakote?</div>
+      <div class="team-sel-btns" id="teamSel-${i}">
+        ${teams.map((t, ti) => `
+          <button class="team-sel-btn ${ti===0?'selected':''}"
+            id="tsbtn-${i}-${ti}"
+            style="${ti===0?`border-color:${t.color};color:${t.color}`:''}"
+            onclick="selectTeam(${i},${ti})">
+            <span style="width:8px;height:8px;border-radius:50%;background:${t.color};display:inline-block"></span>
+            ${t.name}
+          </button>
+        `).join('')}
+      </div>
+    </div>` : '';
+
+  const hintsHTML = stop.riddle.hints.map((h, hi) => `
+    <button class="hint-btn" id="hbtn-${i}-${hi}" onclick="useHint(${i},${hi})">
+      <span>🕯️ Užuomina ${hi+1}</span>
+      <span class="hint-cost">-${h.cost} taškų</span>
+    </button>
+    <div class="hint-reveal" id="hint-${i}-${hi}">${h.text}</div>
+  `).join('');
+
+  const audioSrcAttr = stop.audio.src ? `src="${stop.audio.src}"` : '';
+
+  return `
+    <!-- HERO: before answer only shows stop number, mystery icon -->
+    <div class="stop-hero" id="hero-${i}">
+      <div class="hero-emoji-bg">🔒</div>
+      <div class="hero-glow"></div>
+      <div class="hero-bottom">
+        <div class="hero-stopnum">Stotelė ${String(i+1).padStart(2,'0')} / ${STOPS.length}</div>
+        <div class="hero-name" id="heroName-${i}" style="display:none">${stop.name}</div>
+        <div class="hero-name" id="heroMystery-${i}" style="font-size:20px;opacity:0.6">??? Suraskite vietą</div>
+        <div class="hero-sub" id="heroSub-${i}" style="display:none">${stop.subtitle}</div>
+      </div>
+    </div>
+
+    ${teamSelHTML}
+
+    <div class="section-label">📜 Mįslė</div>
+    <div class="riddle-card">
+      <div class="riddle-header">
+        <div class="riddle-icon">🔍</div>
+        <div>
+          <div class="riddle-title">Kur esate?</div>
+          <div class="riddle-text">${stop.riddle.text}</div>
+        </div>
+      </div>
+      <div class="answer-section">
+        <input class="answer-input" id="ans-${i}" placeholder="Jūsų atsakymas..."
+          onkeydown="if(event.key==='Enter')checkAnswer(${i})">
+        <button class="submit-answer-btn" id="ansbtn-${i}" onclick="checkAnswer(${i})">
+          ⚔️ Pateikti atsakymą (+${stop.riddle.points} taškų)
+        </button>
+        <div class="answer-feedback" id="ansfb-${i}"></div>
+      </div>
+    </div>
+
+    <div class="hints-section">
+      ${hintsHTML}
+    </div>
+
+    <!-- AUDIO — revealed after riddle solved -->
+    <div class="audio-unlock-card" id="audioCard-${i}">
+      ${audioSrcAttr ? `<audio id="audioEl-${i}" ${audioSrcAttr} preload="auto"></audio>` : ''}
+      <div class="audio-unlock-header">
+        <div class="audio-unlock-icon">🎧</div>
+        <div>
+          <div class="audio-unlock-label">🔓 Atrakinta · Audio pasakojimas</div>
+          <div class="audio-unlock-title">${stop.audio.title}</div>
+          <div class="audio-unlock-dur">${stop.audio.duration} · AI gido pasakojimas</div>
+        </div>
+      </div>
+      <div class="audio-player-row">
+        <button class="ap-btn" id="apbtn-${i}" onclick="toggleAudio(${i})">▶</button>
+        <div class="ap-track">
+          <div class="ap-bar" onclick="seekAudio(event,${i})">
+            <div class="ap-fill" id="apfill-${i}"></div>
+          </div>
+          <div class="ap-times">
+            <span id="aptime-${i}">0:00</span>
+            <span>${stop.audio.duration}</span>
+          </div>
+        </div>
+      </div>
+      <div class="audio-script-box">"${stop.audio.script.substring(0, 180)}..."</div>
+      ${!stop.audio.src ? `<div class="audio-src-hint">💡 Pridėkite MP3 nuorodą į <code>src</code> lauką.</div>` : ''}
+    </div>
+
+    <!-- PHOTO — hidden until riddle solved -->
+    <div id="photoSection-${i}" style="display:none">
+      <div class="section-label">📸 Foto iššūkis</div>
+      <div class="photo-challenge-card" id="photoCard-${i}">
+        <div class="photo-header">
+          <div class="photo-icon">📷</div>
+          <div>
+            <div class="photo-title">Kūrybinė užduotis · +${stop.photo.points} taškų</div>
+            <div class="photo-desc" style="font-size:20px;font-weight:700;color:var(--amber-glow);font-family:'Cinzel',serif;letter-spacing:1px;margin-top:6px">${stop.photo.theme}</div>
+          </div>
+        </div>
+
+        <!-- Photo hint -->
+        <div style="padding: 0 18px 14px;">
+          <div id="photoHintReveal-${i}" style="display:none;padding:10px 14px;background:rgba(212,144,10,0.06);border-left:2px solid rgba(212,144,10,0.4);border-radius:4px;font-size:13px;line-height:1.6;color:var(--mist);font-style:italic;margin-bottom:10px">${stop.photo.hint}</div>
+          <button class="hint-btn" id="photoHintBtn-${i}" onclick="usePhotoHint(${i})">
+            <span>🕯️ Užuomina nuotraukai</span>
+            <span class="hint-cost">-${stop.photo.hintCost} taškų</span>
+          </button>
+        </div>
+
+        <!-- Upload — native label trick for mobile -->
+        <div style="padding: 0 18px 14px;">
+          <div class="photo-preview" id="prevBox-${i}" style="display:none;border-radius:10px;overflow:hidden;margin-bottom:10px;position:relative;">
+            <img id="prevImg-${i}" src="" alt="" style="width:100%;height:200px;object-fit:cover;display:block;">
+            <label for="fileInput-${i}" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:5px 10px;font-size:12px;color:white;cursor:pointer;">↺ Keisti</label>
+          </div>
+
+          <label for="fileInput-${i}" id="uploadLabel-${i}" class="photo-upload-label">
+            <span style="font-size:32px;display:block;margin-bottom:8px">📤</span>
+            <span style="font-size:14px;color:var(--mist);">Pasirinkite nuotrauką</span>
+            <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
+              <span style="padding:7px 14px;background:var(--forest);color:white;border-radius:8px;font-size:12px;font-family:'Cinzel',serif;">📷 Kamera</span>
+              <span style="padding:7px 14px;background:var(--steel);color:white;border-radius:8px;font-size:12px;font-family:'Cinzel',serif;">🖼️ Galerija</span>
+            </div>
+          </label>
+          <input type="file" accept="image/*"
+            id="fileInput-${i}"
+            style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;"
+            onchange="handlePhoto(event,${i})">
+        </div>
+
+        <button class="evaluate-btn" id="evalBtn-${i}" onclick="evaluatePhoto(${i})" style="display:none;margin:0 18px 16px;width:calc(100% - 36px);padding:14px;background:var(--forest);color:white;border:none;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;">
+          🤖 AI vertinimas (+${stop.photo.points} taškų)
+        </button>
+        <div class="ai-evaluating" id="aiEval-${i}" style="display:none;margin:0 18px 14px;padding:16px;background:rgba(212,144,10,0.06);border:1px solid rgba(212,144,10,0.2);border-radius:10px;text-align:center;">
+          <div style="font-size:20px;animation:blink 1.2s infinite">●●●</div>
+          <div style="font-size:13px;color:var(--mist);margin-top:6px;font-style:italic;">AI analizuoja jūsų nuotrauką...</div>
+        </div>
+        <div class="photo-result" id="photoResult-${i}"></div>
+      </div>
+    </div>
+
+    <div class="unlock-banner" id="unlock-${i}">
+      <span class="unlock-icon">🗝️</span>
+      <div class="unlock-title">Stotelė atrakinta!</div>
+      <div class="unlock-next" id="unlockMsg-${i}"></div>
+      ${i < STOPS.length - 1
+        ? `<button class="next-stop-btn" onclick="goNextStop(${i})">Kita stotelė →</button>`
+        : `<button class="next-stop-btn" onclick="showFinale()">🏆 Peržiūrėti rezultatus</button>`
+      }
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// TEAM SELECTION
+// ══════════════════════════════════════════════════════════
+function selectTeam(stopIdx, teamIdx) {
+  currentTeamIdx = teamIdx;
+  teams.forEach((t, ti) => {
+    const btn = document.getElementById(`tsbtn-${stopIdx}-${ti}`);
+    if (!btn) return;
+    if (ti === teamIdx) {
+      btn.classList.add('selected');
+      btn.style.borderColor = t.color;
+      btn.style.color = t.color;
+    } else {
+      btn.classList.remove('selected');
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RIDDLE
+// ══════════════════════════════════════════════════════════
+function checkAnswer(stopIdx) {
+  const input = document.getElementById(`ans-${stopIdx}`);
+  const fb = document.getElementById(`ansfb-${stopIdx}`);
+  const btn = document.getElementById(`ansbtn-${stopIdx}`);
+  const val = input.value.trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // remove diacritics for comparison
+
+  const answers = STOPS[stopIdx].riddle.answer.map(a =>
+    a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  );
+
+  const isCorrect = answers.some(a => val.includes(a) || a.includes(val));
+
+  if (isCorrect) {
+    if (!riddleSolved[stopIdx]) {
+      riddleSolved[stopIdx] = true;
+      teams[currentTeamIdx].points += STOPS[stopIdx].riddle.points;
+      updateLeaderboard();
+    }
+    fb.className = 'answer-feedback correct';
+    fb.textContent = `✅ Teisingai! +${STOPS[stopIdx].riddle.points} taškų komandai "${teams[currentTeamIdx].name}"`;
+    btn.disabled = true;
+    input.disabled = true;
+    showUnlock(stopIdx);
+  } else {
+    fb.className = 'answer-feedback wrong';
+    fb.textContent = `❌ Ne visai... Pabandykite dar kartą arba pasinaudokite užuomina.`;
+    input.select();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// HINTS
+// ══════════════════════════════════════════════════════════
+function useHint(stopIdx, hintIdx) {
+  const key = `${stopIdx}-${hintIdx}`;
+  if (hintUsed[stopIdx].includes(hintIdx)) return;
+  hintUsed[stopIdx].push(hintIdx);
+
+  const cost = STOPS[stopIdx].riddle.hints[hintIdx].cost;
+  teams[currentTeamIdx].points = Math.max(0, teams[currentTeamIdx].points - cost);
+  updateLeaderboard();
+
+  const hint = document.getElementById(`hint-${stopIdx}-${hintIdx}`);
+  const btn = document.getElementById(`hbtn-${stopIdx}-${hintIdx}`);
+  hint.classList.add('shown');
+  btn.classList.add('used');
+  btn.querySelector('.hint-cost').textContent = '✓ Naudota';
+  btn.disabled = true;
+}
+
+// ══════════════════════════════════════════════════════════
+// PHOTO
+// ══════════════════════════════════════════════════════════
+function handlePhoto(event, i) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Resize large images before reading to avoid mobile memory issues
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const MAX = 1200;
+    let w = img.width, h = img.height;
+    if (w > MAX || h > MAX) {
+      if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+      else { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    URL.revokeObjectURL(url);
+
+    const imgEl = document.getElementById(`prevImg-${i}`);
+    imgEl.src = dataUrl;
+    imgEl._base64 = dataUrl.split(',')[1];
+    document.getElementById(`prevBox-${i}`).style.display = 'block';
+    document.getElementById(`uploadLabel-${i}`).style.display = 'none';
+    document.getElementById(`evalBtn-${i}`).style.display = 'block';
+  };
+  img.onerror = () => {
+    // Fallback: read directly
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imgEl = document.getElementById(`prevImg-${i}`);
+      imgEl.src = e.target.result;
+      imgEl._base64 = e.target.result.split(',')[1];
+      document.getElementById(`prevBox-${i}`).style.display = 'block';
+      document.getElementById(`uploadLabel-${i}`).style.display = 'none';
+      document.getElementById(`evalBtn-${i}`).style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  };
+  img.src = url;
+}
+
+function resetPhoto(i) {
+  document.getElementById(`prevBox-${i}`).style.display = 'none';
+  document.getElementById(`uploadLabel-${i}`).style.display = 'block';
+  document.getElementById(`evalBtn-${i}`).style.display = 'none';
+  document.getElementById(`photoResult-${i}`).className = 'photo-result';
+  document.getElementById(`fileInput-${i}`).value = '';
+}
+
+function usePhotoHint(stopIdx) {
+  if (photoHintUsed[stopIdx]) return;
+  photoHintUsed[stopIdx] = true;
+
+  const cost = STOPS[stopIdx].photo.hintCost;
+  teams[currentTeamIdx].points = Math.max(0, teams[currentTeamIdx].points - cost);
+  updateLeaderboard();
+
+  const hintBox = document.getElementById(`photoHintReveal-${stopIdx}`);
+  const btn = document.getElementById(`photoHintBtn-${stopIdx}`);
+  if (hintBox) { hintBox.style.display = 'block'; }
+  if (btn) {
+    btn.innerHTML = `<span>✓ Užuomina atrakinta</span><span class="hint-cost">-${cost} taškų</span>`;
+    btn.disabled = true;
+    btn.classList.add('used');
+  }
+}
+
+async function evaluatePhoto(stopIdx) {
+  const img = document.getElementById(`prevImg-${stopIdx}`);
+  const base64 = img._base64;
+  if (!base64) return;
+
+  const evalBtn = document.getElementById(`evalBtn-${stopIdx}`);
+  const loadingDiv = document.getElementById(`aiEval-${stopIdx}`);
+  const resultDiv = document.getElementById(`photoResult-${stopIdx}`);
+
+  evalBtn.style.display = 'none';
+  loadingDiv.style.display = 'block';
+  resultDiv.className = 'photo-result';
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 300,
+        messages: [{
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "base64", media_type: "image/jpeg", data: base64 }
+            },
+            {
+              type: "text",
+              text: STOPS[stopIdx].photo.aiPrompt
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    loadingDiv.style.display = 'none';
+
+    let result;
+    try {
+      const raw = data.content[0].text.replace(/```json|```/g,'').trim();
+      result = JSON.parse(raw);
+    } catch(e) {
+      result = { pass: true, score: 80, feedback: "Nuotrauka priimta! Puikus kadras." };
+    }
+
+    const pts = result.pass ? Math.round(STOPS[stopIdx].photo.points * (result.score / 100)) : 0;
+
+    if (result.pass && !photoUploaded[stopIdx][currentTeamIdx]) {
+      photoUploaded[stopIdx][currentTeamIdx] = true;
+      teams[currentTeamIdx].points += pts;
+      updateLeaderboard();
+    }
+
+    resultDiv.className = `photo-result ${result.pass ? 'pass' : 'fail'}`;
+    resultDiv.innerHTML = result.pass
+      ? `📸 ${result.feedback}<br><strong>+${pts} taškų komandai "${teams[currentTeamIdx].name}"!</strong>`
+      : `🔄 ${result.feedback}<br>Pabandykite dar kartą!`;
+
+    if (!result.pass) {
+      setTimeout(() => resetPhoto(stopIdx), 2000);
+    }
+
+  } catch(err) {
+    loadingDiv.style.display = 'none';
+    // Fallback if API unavailable
+    const pts = Math.round(STOPS[stopIdx].photo.points * 0.8);
+    if (!photoUploaded[stopIdx][currentTeamIdx]) {
+      photoUploaded[stopIdx][currentTeamIdx] = true;
+      teams[currentTeamIdx].points += pts;
+      updateLeaderboard();
+    }
+    resultDiv.className = 'photo-result pass';
+    resultDiv.innerHTML = `📸 Nuotrauka užfiksuota! +${pts} taškų komandai "${teams[currentTeamIdx].name}"!`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// UNLOCK & NAVIGATION
+// ══════════════════════════════════════════════════════════
+function showUnlock(stopIdx) {
+  // Reveal stop name in hero
+  const heroName = document.getElementById(`heroName-${stopIdx}`);
+  const heroMystery = document.getElementById(`heroMystery-${stopIdx}`);
+  const heroSub = document.getElementById(`heroSub-${stopIdx}`);
+  const heroBg = document.querySelector(`#sp-${stopIdx} .hero-emoji-bg`);
+  if (heroName) heroName.style.display = 'block';
+  if (heroMystery) heroMystery.style.display = 'none';
+  if (heroSub) heroSub.style.display = 'block';
+  if (heroBg) heroBg.textContent = STOPS[stopIdx].emoji;
+
+  // Reveal audio card
+  const audioCard = document.getElementById(`audioCard-${stopIdx}`);
+  if (audioCard) {
+    audioCard.classList.add('revealed');
+    setTimeout(() => audioCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  }
+
+  // Reveal photo section
+  const photoSection = document.getElementById(`photoSection-${stopIdx}`);
+  if (photoSection) photoSection.style.display = 'block';
+
+  // Show navigation banner
+  setTimeout(() => {
+    const banner = document.getElementById(`unlock-${stopIdx}`);
+    const msgEl = document.getElementById(`unlockMsg-${stopIdx}`);
+    msgEl.innerHTML = STOPS[stopIdx].riddle.unlockMsg;
+    banner.classList.add('visible');
+  }, 400);
+}
+
+// ══════════════════════════════════════════════════════════
+// AUDIO PLAYER
+// ══════════════════════════════════════════════════════════
+function fmtTime(s) {
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+
+function toggleAudio(i) {
+  const state = audioState[i];
+  const btn = document.getElementById(`apbtn-${i}`);
+  const realAudio = document.getElementById(`audioEl-${i}`);
+
+  if (state.playing) {
+    state.playing = false;
+    btn.textContent = '▶';
+    btn.classList.remove('playing');
+    clearInterval(audioIntervals[i]);
+    if (realAudio) realAudio.pause();
+  } else {
+    state.playing = true;
+    btn.textContent = '⏸';
+    btn.classList.add('playing');
+    if (realAudio) { realAudio.currentTime = state.currentSec; realAudio.play(); }
+
+    audioIntervals[i] = setInterval(() => {
+      if (realAudio) state.currentSec = Math.floor(realAudio.currentTime);
+      else state.currentSec++;
+      if (state.currentSec >= state.totalSec) {
+        state.currentSec = 0; state.playing = false;
+        btn.textContent = '▶'; btn.classList.remove('playing');
+        clearInterval(audioIntervals[i]); return;
+      }
+      const pct = (state.currentSec / state.totalSec) * 100;
+      const fill = document.getElementById(`apfill-${i}`);
+      const time = document.getElementById(`aptime-${i}`);
+      if (fill) fill.style.width = pct + '%';
+      if (time) time.textContent = fmtTime(state.currentSec);
+    }, 1000);
+  }
+}
+
+function seekAudio(e, i) {
+  const bar = e.currentTarget;
+  const ratio = (e.clientX - bar.getBoundingClientRect().left) / bar.offsetWidth;
+  const state = audioState[i];
+  state.currentSec = Math.floor(ratio * state.totalSec);
+  const realAudio = document.getElementById(`audioEl-${i}`);
+  if (realAudio) realAudio.currentTime = state.currentSec;
+  const fill = document.getElementById(`apfill-${i}`);
+  const time = document.getElementById(`aptime-${i}`);
+  if (fill) fill.style.width = (ratio * 100) + '%';
+  if (time) time.textContent = fmtTime(state.currentSec);
+}
+
+function goNextStop(fromIdx) {
+  const next = fromIdx + 1;
+  if (next >= STOPS.length) { showFinale(); return; }
+
+  document.getElementById(`sp-${fromIdx}`).classList.remove('active');
+  currentStop = next;
+  document.getElementById(`sp-${next}`).classList.add('active');
+  currentTeamIdx = 0;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════
+// FINALE
+// ══════════════════════════════════════════════════════════
+function showFinale() {
+  const sorted = [...teams].sort((a,b) => b.points - a.points);
+  const medals = ['🥇','🥈','🥉'];
+  const podium = document.getElementById('podium');
+  podium.innerHTML = sorted.map((t, i) => `
+    <div class="podium-item">
+      <div class="podium-rank">${medals[i] || (i+1)+'.'}</div>
+      <div class="podium-dot" style="background:${t.color}"></div>
+      <div class="podium-name">${t.name}</div>
+      <div class="podium-score">${t.points}</div>
+    </div>
+  `).join('');
+  showScreen('finale');
+}
+
+// ══════════════════════════════════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════════════════════════════════
+function updateLeaderboard() {
+  const bar = document.getElementById('lbBar');
+  const sorted = [...teams].map((t,i)=>({...t,origIdx:i})).sort((a,b)=>b.points-a.points);
+  bar.innerHTML = sorted.map(t => `
+    <div class="lb-team ${t.origIdx===currentTeamIdx?'active-team':''}">
+      <div class="lb-dot" style="background:${t.color}"></div>
+      <div class="lb-name">${t.name}</div>
+      <div class="lb-pts">${t.points}</div>
+    </div>
+  `).join('');
+}
+
+function updateProgress() {
+  STOPS.forEach((_,i) => {
+    const dot = document.getElementById(`dot-${i}`);
+    if (!dot) return;
+    dot.className = 's-dot ' + (i < currentStop ? 'done' : i===currentStop ? 'current' : '');
+  });
+  document.getElementById('progressLbl').textContent =
+    `${currentStop + 1} / ${STOPS.length} stotelė`;
+}
+
+// ══════════════════════════════════════════════════════════
+// SCORES MODAL
+// ══════════════════════════════════════════════════════════
+function openScores() {
+  const sorted = [...teams].sort((a,b)=>b.points-a.points);
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('modalTeamList').innerHTML = sorted.map((t,i)=>`
+    <div class="modal-team-row">
+      <div class="modal-rank">${medals[i]||''}</div>
+      <div class="modal-dot" style="background:${t.color}"></div>
+      <div class="modal-name">${t.name}</div>
+      <div class="modal-pts">${t.points} pts</div>
+    </div>
+  `).join('');
+  document.getElementById('scoresModal').classList.add('open');
+}
+
+function closeScores(e) {
+  if (!e || e.target === document.getElementById('scoresModal') || !e.target) {
+    document.getElementById('scoresModal').classList.remove('open');
+  }
+}
+</script>
+</body>
+</html>
